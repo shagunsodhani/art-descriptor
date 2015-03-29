@@ -1,11 +1,6 @@
 import time
 
 try:
-	import requests
-except ImportError as exc:
-	print("Error: failed to import settings module ({})".format(exc))
-
-try:
     import database.mysql as db
 except ImportError as exc:
     print("Error: failed to import settings module ({})".format(exc))
@@ -18,29 +13,15 @@ except ImportError as exc:
 
 class art():
 
-	def __init__(self, artid, verbose = 0):
-		self.id = str(artid)
-		self.conn = db.connect()
-		self.cursor = self.conn.cursor()
+	def __init__(self, artist, title, verbose = 0, stopwords = {}):
+		# self.id = artid
+		self.artist = artist
+		self.title = title
 		self.verbose = verbose
 		self.info = 0
-
-	def fetch_info(self):
-		sql = "SELECT ID, OBJECTNUMBER, PRINCIPALMAKER, TITLE, year_ FROM artwork WHERE ID = "+self.id
-		if self.verbose:
-			print sql
-		result = db.read(sql, self.cursor)
-		if self.verbose:
-			print result
-		self.objet_number = result[0][1]
-		self.artist = result[0][2]
-		self.title = result[0][3]
-		self.year = result[0][4]
-		self.info = 1
+		self.stopwords = stopwords
 
 	def describe_title(self):
-		if self.info == 0:
-			self.fetch_info()
 		(wiki_title_results, wiki_title_suggestions) = wiki.search(self.title, suggestion = True)
 		if len(wiki_title_results) > 0:
 			a = wiki_title_results[0]
@@ -49,15 +30,41 @@ class art():
 		else:
 			return 0
 		# print type(a)
-		print self.title
+		# print self.title
 		summary = wiki.summary(a)
 		summary_word_list = summary.split()
 		summary_size = len(summary_word_list)
+		print "summary : "
+		print summary
+		print "title : "
+		print self.title
+		flag = 0
 		if (summary_size > 30):
-			print summary
-			print "\n"
+			# print summary
+			# print "summary size > 30"
+			title_word_list = self.title.split()
+			for i in title_word_list:
+				if i not in self.stopwords:
+					if i not in summary_word_list:
+						flag = -1
+						print i
+						# break;
+
+		# else:
+			#summary too small
+			#try generating summary using artist name
+
+
+
+	def describe_artist(self):
+		if self.verbose:
+			print "Generating information for artist ", self.artist
+		wiki_artist_results = wiki.search(self.artist)
+		if len(wiki_artist_results) > 0:
+			wiki_id = wiki_artist_results[0]
 		else:
-			print "incorrect summary:"
-			print summary
-			print "\n" 
-		# if wiki.summary(a)
+			return 0
+		page = wiki.page(wiki_id)
+		print "Summary about the artist : ", page.summary
+		print "content about the artist : ", page.content
+		#since artist is a named entity, we do not have to perform tests for resolving artist entity.
