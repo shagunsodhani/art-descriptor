@@ -1,25 +1,27 @@
 import time
-
-try:
-    import database.mysql as db
-except ImportError as exc:
-    print("Error: failed to import settings module ({})".format(exc))
+import re
 
 try:
     import wikipedia as wiki
 except ImportError as exc:
     print("Error: failed to import settings module ({})".format(exc))
 
+try:
+    from summary import SimpleSummarizer
+except ImportError as exc:
+    print("Error: failed to import settings module ({})".format(exc))
+
 
 class art():
 
-	def __init__(self, artist, title, verbose = 0, stopwords = {}):
-		# self.id = artid
+	def __init__(self, title, artist, verbose = 0, stopwords = {}, artist_summary_size = 4, title_summary_size = 4):
 		self.artist = artist
 		self.title = title
 		self.verbose = verbose
 		self.info = 0
 		self.stopwords = stopwords
+		self.artist_summary_size = artist_summary_size
+		self.title_summary_size = title_summary_size
 
 	def describe_title(self):
 		(wiki_title_results, wiki_title_suggestions) = wiki.search(self.title, suggestion = True)
@@ -65,6 +67,14 @@ class art():
 		else:
 			return 0
 		page = wiki.page(wiki_id)
-		print "Summary about the artist : ", page.summary
-		print "content about the artist : ", page.content
-		#since artist is a named entity, we do not have to perform tests for resolving artist entity.
+		ss = SimpleSummarizer()
+		content = ""
+		a = re.split('\n==[A-Za-z ]*==\n', page.content.split('== References ==')[0])
+		for i in a:
+			content+=i.strip()+"\n"
+		print "Wikipedia Summary about the artist : ", page.summary
+		print "\n"
+		print "Generated Summary about the artist : ", ss.summarize(content, self.artist_summary_size)
+		print "\n"
+		print "Content about the artist : ", content
+		print "\n"
