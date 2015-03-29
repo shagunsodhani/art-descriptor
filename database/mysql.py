@@ -20,6 +20,7 @@ def connect(config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)
     host=config.get(app_name,"host")
     user=config.get(app_name,"user")
     passwd=config.get(app_name,"passwd")
+    db=config.get(app_name,"db")
     charset=config.get(app_name,"charset")
     use_unicode=config.get(app_name,"use_unicode")
 
