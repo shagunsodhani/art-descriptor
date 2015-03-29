@@ -1,0 +1,8 @@
+#mysql
+[app-name]
+host =
+user = 
+passwd = 
+db = 
+charset = utf8
+use_unicode = True
